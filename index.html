@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>NDP Γ-κ Dynamics</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.min.js"></script>
+    <style>
+        canvas { max-width: 600px; margin: 20px auto; }
+        body { font-family: Arial, sans-serif; text-align: center; background: #f4f4f4; }
+        h2 { color: #333; }
+        p { color: #555; }
+    </style>
+</head>
+<body>
+    <h2>Γ-κ Dynamics in Nucleodynamic Paradigm</h2>
+    <canvas id="gammaKappaChart"></canvas>
+    <p>Gold (Γ): True Nucleus; Red (κ): Pseudo-Nucleus. Stable equilibrium when det(Γ,κ) > 0.</p>
+    <script>
+        const GAMMA_0 = 1.0, KAPPA_0 = 1.0, ALPHA = 0.1, BETA = 0.05;
+        const T_MAX = 100, DT = 0.1;
+        const t = Array.from({length: T_MAX / DT}, (_, i) => i * DT);
+        let gamma = new Array(t.length).fill(0), kappa = new Array(t.length).fill(0);
+        gamma[0] = GAMMA_0; kappa[0] = KAPPA_0;
+
+        function dGammaDt(g, k) { return g * (1 - ALPHA * k); }
+        function dKappaDt(g, k) { return BETA * k * (1 - g / k); }
+
+        for (let i = 1; i < t.length; i++) {
+            gamma[i] = gamma[i-1] + DT * dGammaDt(gamma[i-1], kappa[i-1]);
+            kappa[i] = kappa[i-1] + DT * dKappaDt(gamma[i-1], kappa[i-1]);
+        }
+
+        const ctx = document.getElementById('gammaKappaChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: t,
+                datasets: [
+                    {
+                        label: 'Γ (True Nucleus)',
+                        data: gamma,
+                        borderColor: '#FFD700',
+                        backgroundColor: 'rgba(255, 215, 0, 0.1)',
+                        fill: false,
+                        tension: 0.1
+                    },
+                    {
+                        label: 'κ (Pseudo-Nucleus)',
+                        data: kappa,
+                        borderColor: '#B22222',
+                        backgroundColor: 'rgba(178, 34, 34, 0.1)',
+                        fill: false,
+                        tension: 0.1
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    x: { title: { display: true, text: 'Time' } },
+                    y: { title: { display: true, text: 'Strength' }, beginAtZero: true }
+                },
+                plugins: {
+                    legend: { display: true },
+                    title: { display: true, text: 'NDP Γ-κ Dynamics Simulation' }
+                }
+            }
+        });
+    </script>
+</body>
+</html>
